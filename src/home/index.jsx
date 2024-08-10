@@ -62,20 +62,23 @@ function Home() {
                 const maxId = Math.max(...ids);
                 setNextId(maxId + 1);
             } else {
-                setNextId(1);
+                setNextId();
             }
         };
         const GetFireBase = async () => {
             const dataJson = await axios.get("https://movie-ticket-25-659ce-default-rtdb.asia-southeast1.firebasedatabase.app/users/.json")
-            console.log(dataJson.data);
-            setData(dataJson.data)
-            // console.log(data);
+            // console.log(dataJson.data);
+            const data = dataJson.data;
+            if (data) {
+                const validEntries = Object.values(data).filter(item => item !== null);
+                setData(validEntries);
         }
+     }
         fetchNextId();
         GetFireBase()
     }, []);
 
-    const handleClick = () => {
+    const handleClick = async () => {
         // createUserWithEmailAndPassword(
         //     auth,
         //     "dbui@gmai.com", "DuonG@2k5"
@@ -102,15 +105,26 @@ function Home() {
         });
         // setSate(next => (next + 1))
         // setSate2(next => (next * 10))
-           
+        try {
+            const response = await axios.get("https://movie-ticket-25-659ce-default-rtdb.asia-southeast1.firebasedatabase.app/users.json");
+            const newData = response.data;
+            if (newData) {
+                const validEntries = Object.values(newData).filter(item => item !== null);
+                setData(validEntries);
+            }
+        } catch (error) {
+            
+        }
     }
     // console.log(states); console.log(state2);
-    const handleChange = (e) => {
+    const handleChange =   (e) => {
         const { name, value } = e.target;
         setSate(prevData => ({
             ...prevData,
             [name]: value,  
         }));
+     
+        
       
     }
     // hàm xóa data base 
@@ -118,12 +132,14 @@ function Home() {
         try {
             const dbRef = ref(getData);
             await remove(dbRef); 
+            setData("")
             console.log('Dữ liệu đã được xóa thành công');
         } catch (error) {
             console.error('Lỗi khi xóa dữ liệu:', error);
         }
     };
  
+    // console.log(data);
     
     return (
         <div>
@@ -142,7 +158,13 @@ function Home() {
 
             <button  onClick={handleClick}>Click Create</button>
             <p>Json : </p>
-            {data ? data.map((item) => (<p key={item}>name:{item.name}<br></br>age:{item.age}</p>)) : <p>no data</p>}
+            {data.length > 0 ? (
+                data.map((item, index) => (
+                    <p key={index}>Name: {item.name}<br />Age: {item.age}</p>
+                ))
+            ) : (
+                <p>No data</p>
+            )}
             {/* {data.lenght > 1 && data.map((item) => {
                 console.log(item);
                 
